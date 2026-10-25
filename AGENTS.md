@@ -289,3 +289,12 @@ CI 通过只能说明自动检查通过，不能替代人工语义收敛，也�
 - 自动 tag 默认不触发，只有 commit title 包含 `#patch`、`#minor`、`#major` 才会触发版本号更新。
 - 手动打 tag 必须使用 annotated tag。
 - 用户可见变更优先通过 PR 合入，并补齐 label 与验证说明。
+
+## Cursor Cloud specific instructions
+
+- Python 依赖装在 `/opt/dsa-venv`。`/usr/local/bin` 里的 `python3`、`pip`、`pytest`、`flake8` 是包装脚本，实际执行该 venv。不要把它们改成指向 venv 解释器的符号链接，否则 CPython 会忽略 `pyvenv.cfg`，导入落到系统 Python。
+- Web 依赖用 `npm ci --prefix apps/dsa-web`。开发服务器在 `apps/dsa-web` 执行 `npm run dev -- --host 0.0.0.0 --port 5173`。Vite 把 `/api` 代理到 `127.0.0.1:8000`。
+- API 用 `python3 -m uvicorn server:app --host 0.0.0.0 --port 8000`。健康检查是 `GET /api/v1/health`。
+- 没有 `.env` 时复制 `.env.example`。模型密钥和通知渠道不是启动必需项；`STOCK_LIST` 决定自选队列。默认不开启 `ADMIN_AUTH_ENABLED`。
+- `wkhtmltopdf` / `wkhtmltoimage` 用于 Markdown 转图片。桌面端 Electron 打包不在默认启动路径里，需要时再在 `apps/dsa-desktop` 安装依赖。
+- 后端离线检查入口仍是 `./scripts/ci_gate.sh`。Web 检查是 `npm run lint`、`npm test`、`npm run build`。
